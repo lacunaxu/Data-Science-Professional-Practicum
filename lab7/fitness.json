@@ -1,0 +1,398 @@
+{
+  "ruleChain": {
+    "name": "Fitness",
+    "type": "CORE",
+    "firstRuleNodeId": null,
+    "root": false,
+    "debugMode": false,
+    "configuration": null,
+    "additionalInfo": {
+      "description": ""
+    }
+  },
+  "metadata": {
+    "version": 9,
+    "firstNodeIndex": 0,
+    "nodes": [
+      {
+        "type": "org.thingsboard.rule.engine.filter.TbCheckMessageNode",
+        "name": "GPS presence",
+        "debugSettings": null,
+        "singletonMode": false,
+        "queueName": null,
+        "configurationVersion": 0,
+        "configuration": {
+          "messageNames": [
+            "lat",
+            "lon"
+          ],
+          "metadataNames": [],
+          "checkAllKeys": true
+        },
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 340,
+          "layoutY": 145
+        }
+      },
+      {
+        "type": "org.thingsboard.rule.engine.metadata.TbGetAttributesNode",
+        "name": "GPS fetch",
+        "debugSettings": null,
+        "singletonMode": false,
+        "queueName": null,
+        "configurationVersion": 1,
+        "configuration": {
+          "tellFailureIfAbsent": true,
+          "fetchTo": "METADATA",
+          "clientAttributeNames": [],
+          "sharedAttributeNames": [],
+          "serverAttributeNames": [],
+          "latestTsKeyNames": [
+            "lat",
+            "lon"
+          ],
+          "getLatestValueWithTs": false
+        },
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 629,
+          "layoutY": 136
+        }
+      },
+      {
+        "type": "org.thingsboard.rule.engine.math.TbMathNode",
+        "name": "GPS to distance",
+        "debugSettings": null,
+        "singletonMode": false,
+        "queueName": null,
+        "configurationVersion": 0,
+        "configuration": {
+          "operation": "CUSTOM",
+          "arguments": [
+            {
+              "type": "MESSAGE_BODY",
+              "key": "lat",
+              "name": "x",
+              "defaultValue": null
+            },
+            {
+              "type": "MESSAGE_BODY",
+              "key": "lon",
+              "name": "y",
+              "defaultValue": null
+            },
+            {
+              "type": "MESSAGE_METADATA",
+              "key": "lat",
+              "name": "z",
+              "defaultValue": null
+            },
+            {
+              "type": "MESSAGE_METADATA",
+              "key": "lon",
+              "name": "a",
+              "defaultValue": null
+            },
+            {
+              "type": "CONSTANT",
+              "key": 6371,
+              "name": "b"
+            }
+          ],
+          "customFunction": "2*b*asin(sqrt(sin(((x-z)*pi/180)/2)^2+ cos(z*pi/180)*cos(x*pi/180)* sin(((y-a)*pi/180)/2)^2))",
+          "result": {
+            "type": "MESSAGE_BODY",
+            "key": "walk_km",
+            "resultValuePrecision": 2,
+            "addToBody": false,
+            "addToMetadata": false
+          }
+        },
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 954,
+          "layoutY": 134
+        }
+      },
+      {
+        "type": "org.thingsboard.rule.engine.math.TbMathNode",
+        "name": "distance to calorie",
+        "debugSettings": null,
+        "singletonMode": false,
+        "queueName": null,
+        "configurationVersion": 0,
+        "configuration": {
+          "operation": "CUSTOM",
+          "arguments": [
+            {
+              "type": "MESSAGE_BODY",
+              "key": "walk_km_used",
+              "name": "x",
+              "defaultValue": null
+            },
+            {
+              "type": "ATTRIBUTE",
+              "key": "weightKG",
+              "name": "y",
+              "attributeScope": "SERVER_SCOPE",
+              "defaultValue": 70
+            },
+            {
+              "type": "CONSTANT",
+              "key": 0.75,
+              "name": "z"
+            }
+          ],
+          "customFunction": "x*y*z",
+          "result": {
+            "type": "MESSAGE_BODY",
+            "key": "calorie",
+            "resultValuePrecision": 2,
+            "addToBody": false,
+            "addToMetadata": false
+          }
+        },
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 1483,
+          "layoutY": 152
+        }
+      },
+      {
+        "type": "org.thingsboard.rule.engine.flow.TbRuleChainOutputNode",
+        "name": "distance",
+        "debugSettings": null,
+        "singletonMode": false,
+        "queueName": null,
+        "configurationVersion": 0,
+        "configuration": {
+          "version": 0
+        },
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 1832,
+          "layoutY": 552
+        }
+      },
+      {
+        "type": "org.thingsboard.rule.engine.math.TbMathNode",
+        "name": "threshold diff",
+        "debugSettings": null,
+        "singletonMode": false,
+        "queueName": null,
+        "configurationVersion": 0,
+        "configuration": {
+          "operation": "SUB",
+          "arguments": [
+            {
+              "type": "CONSTANT",
+              "key": 0.1,
+              "name": "x"
+            },
+            {
+              "type": "MESSAGE_BODY",
+              "key": "walk_km",
+              "name": "y",
+              "defaultValue": null
+            }
+          ],
+          "result": {
+            "type": "MESSAGE_BODY",
+            "key": "diff",
+            "resultValuePrecision": 2,
+            "addToBody": false,
+            "addToMetadata": false
+          }
+        },
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 1253,
+          "layoutY": 58
+        }
+      },
+      {
+        "type": "org.thingsboard.rule.engine.math.TbMathNode",
+        "name": "sign",
+        "debugSettings": null,
+        "singletonMode": false,
+        "queueName": null,
+        "configurationVersion": 0,
+        "configuration": {
+          "operation": "SIGNUM",
+          "arguments": [
+            {
+              "type": "MESSAGE_BODY",
+              "key": "diff",
+              "name": "x",
+              "defaultValue": null
+            }
+          ],
+          "result": {
+            "type": "MESSAGE_BODY",
+            "key": "sgn",
+            "resultValuePrecision": 2,
+            "addToBody": false,
+            "addToMetadata": false
+          }
+        },
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 1245,
+          "layoutY": 117
+        }
+      },
+      {
+        "type": "org.thingsboard.rule.engine.math.TbMathNode",
+        "name": "max gate",
+        "debugSettings": null,
+        "singletonMode": false,
+        "queueName": null,
+        "configurationVersion": 0,
+        "configuration": {
+          "operation": "MAX",
+          "arguments": [
+            {
+              "type": "MESSAGE_BODY",
+              "key": "sgn",
+              "name": "x",
+              "defaultValue": null
+            },
+            {
+              "type": "CONSTANT",
+              "key": 0,
+              "name": "y"
+            }
+          ],
+          "result": {
+            "type": "MESSAGE_BODY",
+            "key": "gate",
+            "resultValuePrecision": 2,
+            "addToBody": false,
+            "addToMetadata": false
+          }
+        },
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 1248,
+          "layoutY": 185
+        }
+      },
+      {
+        "type": "org.thingsboard.rule.engine.math.TbMathNode",
+        "name": "filtered distance",
+        "debugSettings": null,
+        "singletonMode": false,
+        "queueName": null,
+        "configurationVersion": 0,
+        "configuration": {
+          "operation": "MULT",
+          "arguments": [
+            {
+              "type": "MESSAGE_BODY",
+              "key": "walk_km",
+              "name": "x",
+              "defaultValue": null
+            },
+            {
+              "type": "MESSAGE_BODY",
+              "key": "gate",
+              "name": "y",
+              "defaultValue": null
+            }
+          ],
+          "result": {
+            "type": "MESSAGE_BODY",
+            "key": "walk_km_used",
+            "resultValuePrecision": 2,
+            "addToBody": false,
+            "addToMetadata": false
+          }
+        },
+        "additionalInfo": {
+          "description": "",
+          "layoutX": 1246,
+          "layoutY": 252
+        }
+      }
+    ],
+    "connections": [
+      {
+        "fromIndex": 0,
+        "toIndex": 1,
+        "type": "True"
+      },
+      {
+        "fromIndex": 0,
+        "toIndex": 4,
+        "type": "False"
+      },
+      {
+        "fromIndex": 1,
+        "toIndex": 2,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 1,
+        "toIndex": 4,
+        "type": "Failure"
+      },
+      {
+        "fromIndex": 2,
+        "toIndex": 5,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 3,
+        "toIndex": 4,
+        "type": "Failure"
+      },
+      {
+        "fromIndex": 3,
+        "toIndex": 4,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 5,
+        "toIndex": 4,
+        "type": "Failure"
+      },
+      {
+        "fromIndex": 5,
+        "toIndex": 6,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 6,
+        "toIndex": 4,
+        "type": "Failure"
+      },
+      {
+        "fromIndex": 6,
+        "toIndex": 7,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 7,
+        "toIndex": 4,
+        "type": "Failure"
+      },
+      {
+        "fromIndex": 7,
+        "toIndex": 8,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 8,
+        "toIndex": 3,
+        "type": "Success"
+      },
+      {
+        "fromIndex": 8,
+        "toIndex": 4,
+        "type": "Failure"
+      }
+    ],
+    "ruleChainConnections": null
+  }
+}

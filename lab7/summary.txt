@@ -1,0 +1,24 @@
+DSCI 560 Lab 7 – Summary
+Team: Stay Alive
+
+In this lab, we built a mobile-based IoT system using OwnTracks and ThingsBoard deployed on AWS EC2.
+
+Phones send GPS data via HTTP to ThingsBoard, where it is stored in PostgreSQL and visualized on dashboards.
+
+We extended the base tracking system into two modules:
+
+1. Fitness tracking
+   - Computes walking distance using GPS
+   - Filters unrealistic GPS spikes
+   - Calculates calories based on user weight
+   - Displays leaderboard and routes
+
+2. AI recommendation
+   - Detects user POI query
+   - Builds prompt using GPS coordinates
+   - Calls OpenAI API
+   - Pushes results to Telegram
+
+Both modules operate on the same GPS data stream.
+
+The project shows how one IoT telemetry pipeline can support multiple applications beyond basic mapping.

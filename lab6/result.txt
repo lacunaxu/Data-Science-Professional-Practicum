@@ -1,0 +1,104 @@
+Oil Wells Data Wrangling - Lab 6
+Team: Stay Alive
+
+Execution Results:
+
+STEP 1 - PDF Extraction:
+Total PDF files processed: 136
+Total well records extracted: 136
+Records saved to MySQL database: 136
+
+STEP 2 - Web Enrichment:
+Records successfully enriched using drillingedge.com: 136
+Missing latitude/longitude records: 2
+
+STEP 3 - Web Visualization:
+Flask server started successfully.
+API endpoint (/api/wells) returned 136 records.
+Map markers rendered successfully with interactive popups.
+
+Database Validation:
+SELECT COUNT(*) FROM wells; → 136
+SELECT COUNT(*) FROM wells WHERE latitude IS NULL OR longitude IS NULL; → 2
+
+Pipeline executed successfully without runtime errors.
+
+Total PDF files processed: 136
+Total wells extracted: 136
+Records successfully inserted into MySQL: 136
+Records enriched via drillingedge.com: 136
+Records missing coordinates: 2
+
+mysql> SELECT COUNT(*) FROM wells;
+136
+
+mysql> SELECT COUNT(*) FROM wells WHERE latitude IS NULL OR longitude IS NULL;
+2
+
+mysql> -h 127.0.0.1 -P 3306 -u root -e "
+USE oil_lab6;
+SELECT
+  COUNT(*) AS total,
+  SUM(latitude IS NULL) AS lat_null,
+  SUM(longitude IS NULL) AS lon_null,
+  SUM(well_status IS NULL) AS status_null,
+  SUM(oil_produced_bbls IS NULL) AS oil_null,
+  SUM(gas_produced_mcf IS NULL) AS gas_null
+FROM wells;
+"
++-------+----------+----------+-------------+----------+----------+
+| total | lat_null | lon_null | status_null | oil_null | gas_null |
++-------+----------+----------+-------------+----------+----------+
+|   136 |        0 |        2 |           0 |        0 |        0 |
++-------+----------+----------+-------------+----------+----------+
+
+mysql> -h 127.0.0.1 -P 3306 -u root -e "USE oil_lab6; DESCRIBE wells;"
++------------------------+--------------+------+-----+---------+----------------+
+| Field                  | Type         | Null | Key | Default | Extra          |
++------------------------+--------------+------+-----+---------+----------------+
+| id                     | int          | NO   | PRI | NULL    | auto_increment |
+| source_file            | varchar(255) | YES  |     | NULL    |                |
+| operator               | varchar(255) | YES  |     | NULL    |                |
+| well_name              | varchar(255) | YES  |     | NULL    |                |
+| api                    | varchar(50)  | YES  |     | NULL    |                |
+| job_number             | varchar(100) | YES  |     | NULL    |                |
+| job_type               | varchar(100) | YES  |     | NULL    |                |
+| county                 | varchar(255) | YES  |     | NULL    |                |
+| shl_location           | varchar(500) | YES  |     | NULL    |                |
+| latitude               | double       | YES  |     | NULL    |                |
+| longitude              | double       | YES  |     | NULL    |                |
+| datum                  | varchar(255) | YES  |     | NULL    |                |
+| date_stimulated        | varchar(255) | YES  |     | NULL    |                |
+| stimulated_formation   | varchar(100) | YES  |     | NULL    |                |
+| top_ft                 | int          | YES  |     | NULL    |                |
+| bottom_ft              | int          | YES  |     | NULL    |                |
+| stimulation_stages     | int          | YES  |     | NULL    |                |
+| volume                 | int          | YES  |     | NULL    |                |
+| volume_units           | varchar(255) | YES  |     | NULL    |                |
+| type_treatment         | varchar(255) | YES  |     | NULL    |                |
+| acid_pct               | double       | YES  |     | NULL    |                |
+| lbs_proppant           | bigint       | YES  |     | NULL    |                |
+| max_treatment_pressure | int          | YES  |     | NULL    |                |
+| max_treatment_rate     | double       | YES  |     | NULL    |                |
+| details                | text         | YES  |     | NULL    |                |
+| field_name             | varchar(100) | YES  |     | NULL    |                |
+| section_twp_range      | varchar(100) | YES  |     | NULL    |                |
+| ndic_file_no           | varchar(100) | YES  |     | NULL    |                |
+| well_status            | varchar(100) | YES  |     | NULL    |                |
+| well_type              | varchar(100) | YES  |     | NULL    |                |
+| well_direction         | varchar(10)  | YES  |     | NULL    |                |
+| closest_city           | varchar(100) | YES  |     | NULL    |                |
+| township_range_section | varchar(100) | YES  |     | NULL    |                |
+| first_production_date  | varchar(100) | YES  |     | NULL    |                |
+| last_production_date   | varchar(100) | YES  |     | NULL    |                |
+| oil_produced_bbls      | int          | YES  |     | NULL    |                |
+| gas_produced_mcf       | int          | YES  |     | NULL    |                |
+| drillingedge_url       | varchar(500) | YES  |     | NULL    |                |
+| drillingedge_county    | varchar(100) | YES  |     | NULL    |                |
++------------------------+--------------+------+-----+---------+----------------+
+
+curl http://127.0.0.1:5001/api/wells
+→ Returned 136 JSON records successfully.
+
+Flask server started successfully at http://localhost:5001
+Map markers rendered successfully.
